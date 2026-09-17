@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>简易画图助手 SimpleDrawBot · 项目作品集</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- 背景网格 -->
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<!-- 导航 -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <span class="dot"></span>SimpleDrawBot
+    </div>
+    <ul class="nav-links">
+      <li><a href="#hero">概览</a></li>
+      <li><a href="#demo">演示</a></li>
+      <li><a href="#pipeline">技术链路</a></li>
+      <li><a href="#debug">Debug 实录</a></li>
+      <li><a href="#prompts">Prompt 迭代</a></li>
+      <li><a href="#modules">模块</a></li>
+      <li><a href="#stack">技术栈</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="hero">
+  <div class="container">
+    <div class="hero-badge">独立开发 · AI 应用 · Android</div>
+    <h1 class="hero-title">
+      简易画图助手
+      <span class="hero-title-en">SimpleDrawBot</span>
+    </h1>
+    <p class="hero-sub">
+      输入一句话描述，AI 自动生成简笔画，经轮廓提取转换为笔画坐标，
+      再通过系统辅助能力在屏幕指定区域<span class="hl">自动绘制完成</span>。
+    </p>
+
+    <div class="hero-stats">
+      <div class="stat"><b data-count="14">0</b><span>Kotlin 模块</span></div>
+      <div class="stat"><b data-count="6442">0</b><span>行代码</span></div>
+      <div class="stat"><b data-count="279">0</b><span>KB 源码</span></div>
+      <div class="stat"><b data-count="5">0</b><span>条绘制笔画</span></div>
+      <div class="stat"><b>v1.1</b><span>已打包版本</span></div>
+    </div>
+
+    <div class="hero-actions">
+      <a href="#demo" class="btn btn-primary">观看绘制演示</a>
+      <a href="#debug" class="btn btn-ghost">查看 Debug 实录</a>
+    </div>
+  </div>
+  <div class="scroll-hint"><span></span>向下滚动</div>
+</header>
+
+<!-- ============ 核心演示 ============ -->
+<section class="section" id="demo">
+  <div class="container">
+    <div class="sec-head">
+      <span class="sec-tag">LIVE DEMO</span>
+      <h2>AI 绘制全流程模拟</h2>
+      <p>以下绘制动画使用项目中 <code>test_cat_coords.json</code> 的<b>真实笔画坐标数据</b>在 Canvas 上还原</p>
+    </div>
+
+    <div class="demo-wrap">
+      <!-- 手机模拟器 -->
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="phone-statusbar">
+            <span id="clock">9:41</span>
+            <span>SimpleDrawBot</span>
+          </div>
+
+          <!-- 输入界面 -->
+          <div class="ui-panel" id="uiInput">
+            <div class="ui-label">输入要画的东西</div>
+            <div class="ui-input" id="uiInputText"></div>
+            <div class="ui-row">
+              <span class="ui-chip active">简单</span>
+              <span class="ui-chip">复杂</span>
+              <span class="ui-chip">精细</span>
+            </div>
+            <div class="ui-btn" id="uiDrawBtn">开始画</div>
+          </div>
+
+          <!-- 生成图 -->
+          <div class="ui-panel" id="uiImage">
+            <div class="ui-label">AI 生成简笔画</div>
+            <div class="img-frame">
+              <img src="assets/ai_generated_cat.jpg" alt="AI 生成的猫">
+            </div>
+          </div>
+
+          <!-- 轮廓 -->
+          <div class="ui-panel" id="uiContour">
+            <div class="ui-label">OpenCV 轮廓提取</div>
+            <div class="img-frame contour">
+              <img src="assets/debug_contour.jpg" alt="轮廓提取结果">
+            </div>
+          </div>
+
+          <!-- 绘制画布 -->
+          <div class="ui-panel" id="uiCanvas">
+            <div class="ui-label">自动绘制中 <span id="strokeInfo">0 / 5</span></div>
+            <div class="canvas-frame">
+              <canvas id="drawCanvas" width="760" height="760"></canvas>
+              <div class="pen" id="pen"></div>
+            </div>
+            <div class="ui-progress"><i id="drawProgress"></i></div>
+            <div class="ui-meta">
+              <div class="um-row"><span>绘制笔画</span><b id="mStroke">—</b></div>
+              <div class="um-row"><span>采样点</span><b id="mPoints">—</b></div>
+              <div class="um-row"><span>状态</span><b id="mState">待开始</b></div>
+            </div>
+          </div>
+
+          <!-- 悬浮球 -->
+          <div class="fab" id="fab">
+            <svg viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25ZM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 流程步骤 -->
+      <div class="demo-side">
+        <div class="steps" id="steps">
+          <div class="step" data-step="0">
+            <div class="step-no">01</div>
+            <div class="step-body">
+              <h4>用户输入</h4>
+              <p>输入文字描述，如「猴子捞月」；选择绘制复杂度与时长</p>
+              <code>MainActivity → 权限引导 + AI 配置</code>
+            </div>
+          </div>
+          <div class="step" data-step="1">
+            <div class="step-no">02</div>
+            <div class="step-body">
+              <h4>AI 图像生成</h4>
+              <p>调用 SiliconFlow / Seedream 接口生成 1024×1024 简笔画</p>
+              <code>AiSketchGenerator.callSeedream()</code>
+            </div>
+          </div>
+          <div class="step" data-step="2">
+            <div class="step-no">03</div>
+            <div class="step-body">
+              <h4>OpenCV 轮廓提取</h4>
+              <p>灰度 → 二值化 → 形态学闭运算 → 骨架提取 → 轮廓追踪</p>
+              <code>ImageContourExtractor（558 行）</code>
+            </div>
+          </div>
+          <div class="step" data-step="3">
+            <div class="step-no">04</div>
+            <div class="step-body">
+              <h4>形状 → 笔画坐标</h4>
+              <p>轮廓点序列简化为可执行的绘制笔画，归一化为 0~1 坐标</p>
+              <code>ShapeToStrokeConverter + SvgPathParser</code>
+            </div>
+          </div>
+          <div class="step" data-step="4">
+            <div class="step-no">05</div>
+            <div class="step-body">
+              <h4>自动绘制</h4>
+              <p>通过无障碍能力下发绘制手势，在用户框选区域内逐笔绘出</p>
+              <code>DrawingAccessibilityService（331 行）</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-ctrl">
+          <button class="btn btn-primary" id="btnPlay">▶ 播放演示</button>
+          <button class="btn btn-ghost" id="btnReplay">↻ 重播</button>
+          <label class="speed">
+            速度
+            <input type="range" id="speed" min="1" max="12" value="6">
+          </label>
+        </div>
+        <p class="demo-note">
+          绘制坐标来自项目真实产出物 <code>test_cat_coords.json</code>（5 笔 / 2,668 个原始采样点）
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 技术链路 ============ -->
+<section class="section alt" id="pipeline">
+  <div class="container">
+    <div class="sec-head">
+      <span class="sec-tag">PIPELINE</span>
+      <h2>三级容错的技术链路</h2>
+      <p>主链路失败时自动降级，保障功能可用性 —— 这是项目最关键的架构设计</p>
+    </div>
+
+    <div class="flow">
+      <div class="flow-node">
+        <div class="flow-icon">⌨️</div>
+        <h4>文本输入</h4>
+        <p>用户描述</p>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node main">
+        <div class="flow-badge">主链路</div>
+        <div class="flow-icon">🎨</div>
+        <h4>AI 图像生成</h4>
+        <p>Seedream API</p>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node">
+        <div class="flow-icon">🔍</div>
+        <h4>轮廓提取</h4>
+        <p>OpenCV</p>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node">
+        <div class="flow-icon">📐</div>
+        <h4>笔画转换</h4>
+        <p>坐标归一化</p>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node">
+        <div class="flow-icon">✍️</div>
+        <h4>自动绘制</h4>
+        <p>手势下发</p>
+      </div>
+    </div>
+
+    <div class="fallback">
+      <div class="fb-title">⬇ 主链路失败时自动降级 ⬇</div>
+      <div class="fb-list">
+        <div class="fb-item">
+          <span class="fb-tag">兜底 1</span>
+          <h4>SVG 路径解析</h4>
+          <p>大模型直接输出 SVG path，本地解析为绘制坐标</p>
+          <code>SvgPathParser（372 行）</code>
+        </div>
+        <div class="fb-item">
+          <span class="fb-tag">兜底 2</span>
+          <h4>结构化绘图指令</h4>
+          <p>解析模型输出的 JSON 绘图指令序列</p>
+          <code>ShapeToStrokeConverter（152 行）</code>
+        </div>
+        <div class="fb-item">
+          <span class="fb-tag">兜底 3</span>
+          <h4>内置模板库</h4>
+          <p>预置常用图案模板，离线可用</p>
+          <code>TemplateLibrary（670 行）</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- OpenCV 图像处理管线 -->
+    <div class="cv-pipeline">
+      <h3>OpenCV 轮廓提取过程</h3>
+      <p class="cv-sub">
+        输入为 AI 生成的简笔画，经以下四步处理转换为可执行的绘制笔画。
+        以下均为项目开发中<b>从真机导出的真实中间结果</b>。
+      </p>
+      <div class="cv-steps">
+        <div class="cv-step">
+          <div class="cv-img dark"><img src="assets/debug_binary.png" alt="二值化"></div>
+          <div class="cv-meta">
+            <span class="cv-no">01</span>
+            <div><h5>二值化</h5><code>threshold</code></div>
+          </div>
+        </div>
+        <div class="cv-arrow">→</div>
+        <div class="cv-step">
+          <div class="cv-img dark"><img src="assets/debug_closed.png" alt="形态学闭运算"></div>
+          <div class="cv-meta">
+            <span class="cv-no">02</span>
+            <div><h5>形态学闭运算</h5><code>morphologyEx</code></div>
+          </div>
+        </div>
+        <div class="cv-arrow">→</div>
+        <div class="cv-step">
+          <div class="cv-img dark"><img src="assets/debug_skeleton.png" alt="骨架提取"></div>
+          <div class="cv-meta">
+            <span class="cv-no">03</span>
+            <div><h5>骨架提取</h5><code>thinning</code></div>
+          </div>
+        </div>
+        <div class="cv-arrow">→</div>
+        <div class="cv-step">
+          <div class="cv-img dark"><img src="assets/debug_contour.jpg" alt="轮廓追踪"></div>
+          <div class="cv-meta">
+            <span class="cv-no">04</span>
+            <div><h5>轮廓追踪</h5><code>findContours</code></div>
+          </div>
+        </div>
+      </div>
+      <p class="cv-note">
+        对比 01 与 03 可看到：二值化阶段残留的细小噪点（脸颊处的虚线圈），
+        经形态学闭运算与骨架化处理后基本消除 —— 这是提升笔画提取质量的关键步骤。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DEBUG 实录 ============ -->
+<section class="section" id="debug">
+  <div class="container">
+    <div class="sec-head">
+      <span class="sec-tag">DEBUG LOG</span>
+      <h2>真实 Debug 实录</h2>
+      <p>以下全部来自项目构建与运行日志原文，完整还原从报错到修复的过程</p>
+    </div>
+
+    <div class="timeline">
+
+      <div class="tl-item">
+        <div class="tl-dot fail"></div>
+        <div class="tl-card">
+          <div class="tl-head">
+            <span class="tl-badge err">ERROR</span>
+            <h3>#1 Gradle 找不到构建</h3>
+          </div>
+          <p class="tl-desc">首次构建直接失败，Gradle 提示目录不是合法的构建根目录。</p>
+          <pre class="log"><span class="l-err">FAILURE:</span> Build failed with an exception.
+
+* What went wrong:
+Directory 'C:\...\20260729084954' <span class="l-err">does not contain a Gradle build.</span>
+
+A Gradle build should contain a 'settings.gradle' or
+'settings.gradle.kts' file in its root directory.</pre>
+          <div class="tl-solve">
+            <span class="solve-tag">解决</span>
+            项目实际根目录为 <code>projects/simple_draw_bot</code>，
+            构建命令的工作目录层级错了。改为在含 <code>settings.gradle.kts</code>
+            的目录下执行构建。
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot fail"></div>
+        <div class="tl-card">
+          <div class="tl-head">
+            <span class="tl-badge err">COMPILE</span>
+            <h3>#2 Kotlin 解构声明类型错误（6 处）</h3>
+          </div>
+          <p class="tl-desc">
+            跨进程传递数组时被擦除为 <code>Array&lt;Any?&gt;</code>，解构与类型推断全部失败。
+          </p>
+          <pre class="log">&gt; Task :app:compileDebugKotlin <span class="l-err">FAILED</span>
+<span class="l-err">e:</span> DrawingAccessibilityService.kt:154:65
+    Destructuring declaration initializer of type
+    Array&lt;Any?&gt; must have a 'component1()' function
+<span class="l-err">e:</span> DrawingAccessibilityService.kt:158:27
+    Type mismatch: inferred type is <span class="l-err">Any?</span> but <span class="l-ok">Int</span> was expected
+<span class="l-err">e:</span> DrawingAccessibilityService.kt:158:32
+    Type mismatch: inferred type is <span class="l-err">Any</span> but <span class="l-ok">List&lt;List&lt;PointF&gt;&gt;</span> was expected
+<span class="l-err">e:</span> FloatingBallView.kt:485:53
+    <span class="l-err">Unresolved reference: tvCountdownOverlay</span></pre>
+          <div class="tl-solve">
+            <span class="solve-tag">解决</span>
+            放弃数组解构，改为显式类型的数据载体 + 逐字段强制类型转换；
+            补上布局中缺失的 <code>tvCountdownOverlay</code> 控件 id。
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot fail"></div>
+        <div class="tl-card">
+          <div class="tl-head">
+            <span class="tl-badge err">CRASH</span>
+            <h3>#3 启动即崩溃 · InflateException</h3>
+          </div>
+          <p class="tl-desc">真机（OPPO）安装后一启动就闪退。</p>
+          <pre class="log"><span class="l-err">E AndroidRuntime: FATAL EXCEPTION: main</span>
+E AndroidRuntime: Process: com.simpledrawbot, PID: 10936
+E AndroidRuntime: java.lang.RuntimeException:
+    Unable to start activity ComponentInfo{...}
+E AndroidRuntime: <span class="l-err">Caused by:</span>
+    android.view.InflateException:
+    Binary XML file line #19</pre>
+          <div class="tl-solve">
+            <span class="solve-tag">解决</span>
+            布局 XML 第 19 行引用了当前主题下不存在的属性/控件。
+            改用兼容写法并补充主题定义后恢复启动。
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot warn"></div>
+        <div class="tl-card">
+          <div class="tl-head">
+            <span class="tl-badge warn">RUNTIME</span>
+            <h3>#4 轮廓提取只出 1 条笔画</h3>
+          </div>
+          <p class="tl-desc">
+            链路能跑通，但生成结果不合格 —— 这正是「主链路 + 兜底」设计的由来。
+          </p>
+          <pre class="log">D AiSketchGenerator: Seedream 返回结果: https://s3...
+D AiSketchGenerator: 下载图片成功: <span class="l-ok">1024x1024</span>
+D ContourExtractor: 外轮廓 <span class="l-warn">1</span> 条
+D ContourExtractor: 内轮廓 <span class="l-warn">1</span> 条
+D AiSketchGenerator: 轮廓转笔画: <span class="l-warn">1</span> 条笔画
+D AiSketchGenerator: <span class="l-err">Seedream 图片生成+轮廓提取失败</span>: 未知, 1 条</pre>
+          <div class="tl-solve">
+            <span class="solve-tag">解决</span>
+            调整二值化阈值与形态学闭运算核大小，并新增
+            SVG / 结构化指令 / 模板库三级兜底，避免单点失败导致功能不可用。
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot ok"></div>
+        <div class="tl-card">
+          <div class="tl-head">
+            <span class="tl-badge ok">SUCCESS</span>
+            <h3>#5 构建成功</h3>
+          </div>
+          <pre class="log">&gt; Task :app:compileDebugKotlin
+&gt; Task :app:packageDebug UP-TO-DATE
+&gt; Task :app:assembleDebug UP-TO-DATE
+
+<span class="l-ok">BUILD SUCCESSFUL in 10s</span>
+46 actionable tasks: 1 executed, 45 up-to-date</pre>
+          <div class="tl-solve">
+            <span class="solve-tag">产出</span>
+            打包出 <code>SimpleDrawBot-v1.1.apk</code>，完成可安装版本。
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ Prompt 迭代 ============ -->
+<section class="section alt" id="prompts">
+  <div class="container">
+    <div class="sec-head">
+      <span class="sec-tag">PROMPT ITERATION</span>
+      <h2>Prompt 工程：6 个版本的调优</h2>
+      <p>同一个「小猫」主题，通过 6 轮 Prompt 策略调整，逐步逼近可提取的理想线稿</p>
+    </div>
+
+    <div class="prompt-box">
+      <div class="prompt-tabs" id="promptTabs">
+        <button class="pt active" data-i="0">v1 英文·涂色书</button>
+        <button class="pt" data-i="1">v2 中文·简笔画</button>
+        <button class="pt" data-i="2">v3 技术线稿</button>
+        <button class="pt" data-i="3">v4 涂鸦风</button>
+        <button class="pt" data-i="4">v5 一笔画</button>
+        <button class="pt" data-i="5">v6 混合策略</button>
+      </div>
+      <div class="prompt-stage">
+        <div class="prompt-img">
+          <img id="promptImg" src="assets/prompt_v1.jpg" alt="prompt v1">
+        </div>
+        <div class="prompt-info">
+          <h3 id="promptTitle">v1 · 英文「涂色书风格」</h3>
+          <p id="promptDesc">
+            最初尝试：用英文 Prompt 描述为 children's coloring book 风格。
+            问题：生成结果带有灰阶填充与噪点，二值化后轮廓断裂，
+            提取出的笔画过于破碎。
+          </p>
+          <div class="prompt-meta">
+            <span class="pm bad">轮廓断裂</span>
+            <span class="pm bad">灰度噪点多</span>
+            <span class="pm">❌ 不可用</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 模块架构 ============ -->
+<section class="section" id="modules">
+  <div class="container">
+    <div class="sec-head">
+      <span class="sec-tag">ARCHITECTURE</span>
+      <h2>14 个 Kotlin 模块</h2>
+      <p>共 6,442 行代码 · 279 KB 源码 · 按职责分层组织</p>
+    </div>
+
+    <div class="mod-groups">
+      <div class="mod-group">
+        <h3><span class="mg-dot ui"></span>交互层</h3>
+        <div class="mod-list">
+          <div class="mod"><b>FloatingBallView.kt</b><span>悬浮球主交互</span><i>2405 行</i></div>
+          <div class="mod"><b>AreaSelectorView.kt</b><span>绘制区域框选</span><i>399 行</i></div>
+          <div class="mod"><b>MainActivity.kt</b><span>权限引导 / AI 配置</span><i>330 行</i></div>
+        </div>
+      </div>
+
+      <div class="mod-group">
+        <h3><span class="mg-dot ai"></span>AI 与视觉</h3>
+        <div class="mod-list">
+          <div class="mod"><b>AiSketchGenerator.kt</b><span>AI 生成调度</span><i>601 行</i></div>
+          <div class="mod"><b>ImageContourExtractor.kt</b><span>OpenCV 轮廓提取</span><i>558 行</i></div>
+          <div class="mod"><b>SvgPathParser.kt</b><span>SVG 路径解析</span><i>372 行</i></div>
+          <div class="mod"><b>ShapeToStrokeConverter.kt</b><span>形状转笔画</span><i>152 行</i></div>
+          <div class="mod"><b>AiSketchModels.kt</b><span>AI 数据模型</span><i>95 行</i></div>
+        </div>
+      </div>
+
+      <div class="mod-group">
+        <h3><span class="mg-dot sys"></span>系统服务</h3>
+        <div class="mod-list">
+          <div class="mod"><b>FloatingWindowService.kt</b><span>悬浮窗前台服务</span><i>329 行</i></div>
+          <div class="mod"><b>DrawingAccessibilityService.kt</b><span>绘制手势下发</span><i>331 行</i></div>
+        </div>
+      </div>
+
+      <div class="mod-group">
+        <h3><span class="mg-dot data"></span>数据与工具</h3>
+        <div class="mod-list">
+          <div class="mod"><b>TemplateLibrary.kt</b><span>内置图案模板库</span><i>670 行</i></div>
+          <div class="mod"><b>PreferenceHelper.kt</b><span>配置持久化</span><i>105 行</i></div>
+          <div class="mod"><b>OppoUtils.kt</b><span>OPPO 机型适配</span><i>72 行</i></div>
+          <div class="mod"><b>DrawModels.kt</b><span>绘制数据模型</span><i>23 行</i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nested-json">
+      <h3>产出数据格式</h3>
+      <pre class="code"><code>{
+  "name": "cat",
+  "strokes": [
+    { "points": [ { "x": 0.643, "y": 0.229 }, { "x": 0.352, "y": 0.229 }, ... ] },
+    ...
+  ]
+}</code></pre>
+      <p class="nj-note">
+        归一化为 0~1 坐标，适配任意屏幕尺寸。
+        本页演示动画即使用该文件（5 笔 / 2,668 个采样点）在 Canvas 上还原。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 技术栈 ============ -->
+<section class="section alt" id="stack">
+  <div class="container">
+    <div class="sec-head">
+      <span class="sec-tag">TECH STACK</span>
+      <h2>技术栈</h2>
+    </div>
+
+    <div class="stack-grid">
+      <div class="stack-card">
+        <h4>语言与构建</h4>
+        <div class="tags">
+          <span class="tag">Kotlin 1.9.24</span>
+          <span class="tag">AGP 8.5.2</span>
+          <span class="tag">Gradle KTS</span>
+          <span class="tag">Coroutines</span>
+        </div>
+      </div>
+      <div class="stack-card">
+        <h4>AI 能力</h4>
+        <div class="tags">
+          <span class="tag hl-tag">SiliconFlow / Seedream</span>
+          <span class="tag">OpenAI 兼容接口</span>
+          <span class="tag">gpt-4o-mini</span>
+          <span class="tag">自定义 Prompt 模板</span>
+        </div>
+      </div>
+      <div class="stack-card">
+        <h4>计算机视觉</h4>
+        <div class="tags">
+          <span class="tag hl-tag">OpenCV Android SDK</span>
+          <span class="tag">灰度 / 二值化</span>
+          <span class="tag">形态学闭运算</span>
+          <span class="tag">骨架提取</span>
+          <span class="tag">轮廓追踪</span>
+        </div>
+      </div>
+      <div class="stack-card">
+        <h4>网络与数据</h4>
+        <div class="tags">
+          <span class="tag">OkHttp3</span>
+          <span class="tag">Gson</span>
+          <span class="tag">JSON 坐标序列</span>
+        </div>
+      </div>
+      <div class="stack-card">
+        <h4>UI 与系统能力</h4>
+        <div class="tags">
+          <span class="tag">Material Design</span>
+          <span class="tag">悬浮窗</span>
+          <span class="tag">前台服务</span>
+          <span class="tag hl-tag">无障碍服务</span>
+        </div>
+      </div>
+      <div class="stack-card">
+        <h4>工程实践</h4>
+        <div class="tags">
+          <span class="tag">三级容错降级</span>
+          <span class="tag">机型兼容适配</span>
+          <span class="tag">日志埋点</span>
+          <span class="tag">版本迭代 v1.1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sys-perm">
+      <h3>声明的系统权限</h3>
+      <div class="perm-list">
+        <div class="perm"><code>SYSTEM_ALERT_WINDOW</code><span>悬浮窗覆盖显示</span></div>
+        <div class="perm"><code>FOREGROUND_SERVICE</code><span>悬浮球常驻前台</span></div>
+        <div class="perm"><code>BIND_ACCESSIBILITY_SERVICE</code><span>绘制手势下发</span></div>
+        <div class="perm"><code>INTERNET</code><span>AI 接口调用</span></div>
+      </div>
+      <p class="perm-note">
+        无障碍能力仅用于「把用户想画的图案自动画到画布上」这一创作辅助场景。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 反思 ============ -->
+<section class="section" id="reflect">
+  <div class="container">
+    <div class="sec-head">
+      <span class="sec-tag">REFLECTION</span>
+      <h2>复盘与优化方向</h2>
+    </div>
+    <div class="reflect-grid">
+      <div class="rf-card">
+        <div class="rf-no">01</div>
+        <h4>APK 体积过大</h4>
+        <p>
+          直接打包完整 OpenCV so 库导致 APK 达 <b>153 MB</b>。
+          后续应按需裁剪指令集（仅保留 arm64-v8a）或改用轻量轮廓算法。
+        </p>
+      </div>
+      <div class="rf-card">
+        <div class="rf-no">02</div>
+        <h4>轮廓提取稳定性</h4>
+        <p>
+          AI 生成图的风格波动会直接影响二值化效果。
+          更稳的做法是让模型直接输出矢量（SVG）而非位图，
+          可跳过 CV 环节 —— 这也是把 SVG 解析设为兜底的原因。
+        </p>
+      </div>
+      <div class="rf-card">
+        <div class="rf-no">03</div>
+        <h4>权限引导成本</h4>
+        <p>
+          悬浮窗 + 无障碍双重授权对普通用户门槛较高，
+          应补充分步引导与「为什么需要」的说明，降低流失。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <p><b>简易画图助手 SimpleDrawBot</b> · 独立开发项目</p>
+    <p class="f-sub">Kotlin · OpenCV · AI 图像生成 · 自动化绘制</p>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

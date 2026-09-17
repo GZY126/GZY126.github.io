@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 大屏平板（10 英寸以上） -->
+    <dimen name="floating_ball_size">84dp</dimen>
+    <dimen name="floating_ball_margin">48dp</dimen>
+    <dimen name="floating_panel_width">420dp</dimen>
+
+    <dimen name="area_selector_default_margin">160dp</dimen>
+    <dimen name="area_selector_min_size">200dp</dimen>
+    <dimen name="area_selector_handle_size">56dp</dimen>
+    <dimen name="area_selector_stroke_width">5dp</dimen>
+
+    <dimen name="main_card_margin">32dp</dimen>
+    <dimen name="main_card_corner_radius">24dp</dimen>
+</resources>

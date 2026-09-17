@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">简易画图助手</string>
+    <string name="start_service">开启悬浮球</string>
+    <string name="stop_service">关闭悬浮球</string>
+    <string name="overlay_permission">需要悬浮窗权限</string>
+    <string name="accessibility_permission">需要无障碍服务权限</string>
+    <string name="grant_permission">去授权</string>
+    <string name="input_hint">输入要画的东西，如\"猴子捞月\"</string>
+    <string name="btn_select_area">选择区域</string>
+    <string name="btn_start_draw">开始画</string>
+    <string name="btn_stop">停止</string>
+    <string name="select_area_hint">拖动边框调整绘画区域，完成后点\"确定\"</string>
+    <string name="btn_confirm">确定</string>
+    <string name="btn_cancel">取消</string>
+    <string name="drawing">正在画</string>
+    <string name="draw_done">画完了！</string>
+    <string name="not_found">未找到对应图案。可在设置中配置 AI API Key，支持任意内容</string>
+    <string name="accessibility_service_description">SimpleDrawBot 需要通过无障碍服务模拟点击和滑动手势，以在指定区域自动绘画。</string>
+</resources>

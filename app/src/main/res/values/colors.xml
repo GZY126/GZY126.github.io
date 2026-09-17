@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#FF6B35</color>
+    <color name="primary_dark">#E55A2B</color>
+    <color name="accent">#FF8C42</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="semi_transparent">#AA000000</color>
+    <color name="overlay_border">#FF6B35</color>
+    <color name="overlay_fill">#20FF6B35</color>
+    <color name="handle_color">#FF6B35</color>
+    <color name="btn_stop">#FF4444</color>
+    <color name="btn_start">#4CAF50</color>
+    <color name="floating_bg">#F5F5F5</color>
+</resources>
