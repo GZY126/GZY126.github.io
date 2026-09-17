@@ -56,7 +56,7 @@ SimpleDrawBot 解决的问题很具体：**当你想在某个 App 的涂鸦板�
 
 ## 效果展示
 
-完整的交互式作品页在 **[`showcase/`](showcase/)**，直接用浏览器打开 `showcase/index.html` 即可：
+完整的交互式作品页在 **[项目首页](https://gzy126.github.io)**，直接用浏览器打开 `index.html` 即可：
 
 - **实时绘制演示** —— 用项目产出的真实笔画坐标 `test_cat_coords.json` 在 Canvas 上逐点还原绘制过程
 - **技术链路分解** —— 输入、AI 生成、轮廓提取、笔画转换四阶段可视化
@@ -65,7 +65,7 @@ SimpleDrawBot 解决的问题很具体：**当你想在某个 App 的涂鸦板�
 
 | AI 生成 | 轮廓提取 | 骨架细化 |
 |---|---|---|
-| ![AI 生成](showcase/assets/ai_generated_cat.jpg) | ![轮廓提取](showcase/assets/debug_contour.jpg) | ![骨架细化](showcase/assets/debug_skeleton.png) |
+| ![AI 生成](assets/ai_generated_cat.jpg) | ![轮廓提取](assets/debug_contour.jpg) | ![骨架细化](assets/debug_skeleton.png) |
 
 ---
 
@@ -223,7 +223,7 @@ SimpleDrawBot/
 │       │   │       └── OppoUtils.kt                 机型适配
 │       │   └── res/
 │       └── test/                                    纯 JVM 单元测试
-├── showcase/                                        交互式作品集页面（可直接打开）
+├── index.html / styles.css / app.js / assets/       作品集页面（GitHub Pages 首页）
 ├── tools/                                           Prompt 调优实验脚本（Python）
 ├── docs/
 │   ├── devlog/                                      开发日志 v1.1 → v1.8
@@ -343,7 +343,7 @@ $env:ARK_API_KEY = "your-key-here"
 | [`docs/devlog/`](docs/devlog/) | 各版本开发日志（v1.1 / v1.5 / v1.6 / v1.7 / v1.8 + 项目总述） |
 | [`docs/debug/`](docs/debug/) | 崩溃日志、logcat 抓取、编译错误记录 |
 | [`docs/release/`](docs/release/) | 构建日志与安装日志 |
-| [`showcase/`](showcase/) | 交互式作品集页面 |
+| 根目录 `index.html` | 交互式作品集页面（即 GitHub Pages 首页）|
 
 > 调试日志中出现的设备信息、包名等均为开发环境信息，不含任何密钥或个人敏感数据。
 
