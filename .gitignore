@@ -1,46 +1,11 @@
-# ===== Android =====
-*.iml
-.gradle/
-/local.properties
-/.idea/
+# 系统与编辑器
 .DS_Store
-/build/
-/app/build/
-/captures/
-.externalNativeBuild/
-.cxx/
-*.apk
-*.aab
-*.ap_
-*.dex
-*.class
-bin/
-gen/
-out/
-
-# ===== OpenCV native 库（125 MB，属第三方编译产物，不纳入版本管理）=====
-app/src/main/jniLibs/
-opencv-sdk/
-opencv-android-sdk.zip
-
-# ===== 密钥与敏感配置（切勿提交）=====
-*.keystore
-*.jks
-*.pem
-*.key
-.env
-.env.*
-secrets.properties
-api_keys.*
-tools/.env
-tools/*_key.txt
-
-# ===== 日志（仓库根目录新产生的忽略，已归档的 docs/ 保留）=====
-*.log
-docs/**/*.tmp
-
-# ===== 系统与编辑器 =====
 Thumbs.db
 *.swp
 *~
 .vscode/
+.idea/
+
+# 本地临时文件
+*.tmp
+~$*
